@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import uni from '@dcloudio/vite-plugin-uni'
 
 // 为带内容哈希的静态资源添加长期缓存（图片/字体/媒体/Vite预打包依赖）
@@ -22,18 +22,21 @@ function staticAssetCache(): any {
   }
 }
 
-export default defineConfig({
-  plugins: [uni(), staticAssetCache()],
-  publicDir: 'public',
-  server: {
-    host: '0.0.0.0',
-    port: 8080,
-    allowedHosts: process.env.VITE_ALLOWED_HOSTS?.split(',').filter(Boolean) || [],
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  return {
+    plugins: [uni(), staticAssetCache()],
+    publicDir: 'public',
+    server: {
+      host: '0.0.0.0',
+      port: 8080,
+      allowedHosts: env.VITE_ALLOWED_HOSTS?.split(',').filter(Boolean) || [],
+      proxy: {
+        '/api': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+        },
       },
     },
-  },
+  }
 })
