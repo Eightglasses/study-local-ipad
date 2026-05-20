@@ -2,10 +2,21 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="打卡积分" />
+    <meta name="theme-color" content="#ff6b35" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/static/tab-checkin-active.png" />
     <title>儿童打卡积分</title>
     <!--preload-links-->
     <!--app-context-->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+      }
+    </script>
   </head>
   <body>
     <div id="app"><!--app-html--></div>
