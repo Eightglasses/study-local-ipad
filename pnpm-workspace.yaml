@@ -1,0 +1,9 @@
+packages:
+  - "server"
+
+ignoredBuiltDependencies:
+  - core-js
+  - core-js-pure
+  - esbuild
+
+onlyBuiltDependencies: esbuild

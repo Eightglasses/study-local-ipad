@@ -1,0 +1,20 @@
+{
+  "name": "儿童打卡积分",
+  "appid": "",
+  "description": "儿童日常打卡积分管理应用",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "h5": {
+    "title": "儿童打卡积分",
+    "router": {
+      "mode": "hash"
+    }
+  },
+  "mp-weixin": {
+    "appid": "",
+    "setting": {
+      "urlCheck": false
+    }
+  }
+}

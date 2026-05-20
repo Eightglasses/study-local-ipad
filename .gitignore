@@ -1,0 +1,35 @@
+# === 依赖 ===
+node_modules/
+
+# === 构建产物 ===
+dist/
+.uno/
+
+# === 服务端运行时数据（含用户数据，绝不能提交） ===
+server/data/
+server/uploads/
+server/tmp/
+
+# === 环境变量 / 密钥 ===
+.env
+.env.*
+*.local
+
+# === 系统文件 ===
+.DS_Store
+Thumbs.db
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# === 日志 ===
+*.log
+npm-debug.log*
+
+# === 本地 AI 工具配置 ===
+.claude/
+.qoder/

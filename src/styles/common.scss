@@ -1,0 +1,61 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+page {
+  background-color: #f5f5f5;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #333;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.container {
+  padding: 24rpx;
+  max-width: 1200rpx;
+  margin: 0 auto;
+}
+
+.card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.primary-color {
+  color: #ff6b35;
+}
+
+.success-color {
+  color: #4caf50;
+}
+
+.warning-color {
+  color: #ff9800;
+}
+
+/* iPad / wide screen adaptation */
+@media (min-width: 768px) {
+  .container {
+    max-width: 960rpx;
+  }
+}
+
+/* === H5 input 点击修复 === */
+/* uni-app H5 会把 input 渲染成 <uni-input> 包裹原生 <input>，
+   包裹层在 flex 布局下可能阻挡点击事件 */
+uni-input {
+  display: block !important;
+  width: 100% !important;
+}
+
+uni-input input,
+input {
+  -webkit-appearance: none;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+}
