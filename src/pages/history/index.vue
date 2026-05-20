@@ -45,30 +45,26 @@
         class="date-group"
       >
         <view class="date-label">{{ group.date }}</view>
-        <uni-swipe-action>
-          <uni-swipe-action-item
-            v-for="record in group.records"
-            :key="record.id"
-            :right-options="deleteOption"
-            @click="handleDelete(record)"
-          >
-            <view class="record-item" @tap="openDetail(record)">
-              <view class="record-left">
-                <text class="record-icon">{{ record.taskIcon }}</text>
-                <view class="record-info">
-                  <text class="record-name">{{ record.taskName }}</text>
-                  <text class="record-meta"
-                    >{{ record.date }} · +{{ record.points }}分</text
-                  >
-                </view>
-              </view>
-              <view class="record-right">
-                <text class="record-points earn">+{{ record.points }}</text>
-                <text class="record-arrow">›</text>
-              </view>
+        <view
+          v-for="record in group.records"
+          :key="record.id"
+          class="record-item"
+          @tap="openDetail(record)"
+        >
+          <view class="record-left">
+            <text class="record-icon">{{ record.taskIcon }}</text>
+            <view class="record-info">
+              <text class="record-name">{{ record.taskName }}</text>
+              <text class="record-meta"
+                >{{ record.date }} · +{{ record.points }}分</text
+              >
             </view>
-          </uni-swipe-action-item>
-        </uni-swipe-action>
+          </view>
+          <view class="record-right">
+            <text class="record-points earn">+{{ record.points }}</text>
+            <text class="record-arrow">›</text>
+          </view>
+        </view>
       </view>
     </view>
 
@@ -124,6 +120,13 @@
           <text class="detail-section-title">完成证明</text>
           <image :src="detailImageUrl" class="detail-image" mode="aspectFill" />
         </view>
+
+        <!-- Delete button -->
+        <view class="detail-footer">
+          <view class="detail-delete-btn" @tap="handleDeleteFromDetail">
+            <text class="delete-btn-text">删除此记录</text>
+          </view>
+        </view>
       </view>
     </view>
 
@@ -161,9 +164,21 @@ const previewUrl = ref<string | null>(null);
 const detailRecord = ref<CheckIn | null>(null);
 const detailImageUrl = ref<string | null>(null);
 
-const deleteOption = ref([
-  { text: "删除", style: { backgroundColor: "#dd524d", color: "#fff" } },
-]);
+async function handleDeleteFromDetail() {
+  if (!detailRecord.value) return;
+  uni.showModal({
+    title: "确认删除",
+    content: `确定要删除「${detailRecord.value.taskName}」的打卡记录吗？删除后不可恢复。`,
+    success: async (res) => {
+      if (res.confirm) {
+        await deleteCheckIn(detailRecord.value!.id);
+        closeDetail();
+        loadData();
+        uni.showToast({ title: "已删除", icon: "success" });
+      }
+    },
+  });
+}
 
 const totalEarned = computed(() => {
   return checkins.value.reduce((sum, c) => sum + c.points, 0);
@@ -209,23 +224,6 @@ function openPreview(url: string) {
 
 function closePreview() {
   previewUrl.value = null;
-}
-
-async function handleDelete(record: CheckIn) {
-  uni.showModal({
-    title: "确认删除",
-    content: `确定要删除「${record.taskName}」的打卡记录吗？`,
-    success: async (res) => {
-      if (res.confirm) {
-        await deleteCheckIn(record.id);
-        if (detailRecord.value?.id === record.id) {
-          closeDetail();
-        }
-        loadData();
-        uni.showToast({ title: "已删除", icon: "success" });
-      }
-    },
-  });
 }
 
 async function loadData() {
@@ -321,7 +319,9 @@ onShow(() => loadData());
   justify-content: space-between;
   align-items: center;
   background: #fff;
+  border-radius: 20rpx;
   padding: 28rpx 24rpx;
+  margin-bottom: 12rpx;
 }
 
 .record-left {
@@ -515,15 +515,25 @@ onShow(() => loadData());
   background: #f0f0f0;
 }
 
-// Fix swipe delete button border-radius
-::v-deep .uni-swipe-action-button {
-  border-radius: 0 20rpx 20rpx 0 !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.detail-footer {
+  padding: 24rpx 32rpx 32rpx;
 }
 
-::v-deep uni-swipe-action-item {
-  margin-bottom: 12rpx;
+.detail-delete-btn {
+  text-align: center;
+  padding: 24rpx 0;
+  background: #fff0f0;
+  border-radius: 16rpx;
+  border: 2rpx solid #f44336;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.delete-btn-text {
+  font-size: 28rpx;
+  color: #f44336;
+  font-weight: 500;
 }
 </style>

@@ -79,6 +79,14 @@
         </view>
 
         <view class="form-group">
+          <text class="form-label">图标</text>
+          <view class="icon-select-row" @tap="showTaskIconPicker = true">
+            <text class="icon-select-preview">{{ taskForm.icon }}</text>
+            <text class="icon-select-arrow">›</text>
+          </view>
+        </view>
+
+        <view class="form-group">
           <text class="form-label">名称</text>
           <input
             class="form-input"
@@ -162,6 +170,14 @@
         </view>
 
         <view class="form-group">
+          <text class="form-label">图标</text>
+          <view class="icon-select-row" @tap="showRewardIconPicker = true">
+            <text class="icon-select-preview">{{ rewardForm.icon }}</text>
+            <text class="icon-select-arrow">›</text>
+          </view>
+        </view>
+
+        <view class="form-group">
           <text class="form-label">名称</text>
           <input
             class="form-input"
@@ -188,6 +204,20 @@
         </view>
       </view>
     </view>
+
+    <!-- Icon Picker for Task -->
+    <IconPicker
+      :visible="showTaskIconPicker"
+      v-model="taskForm.icon"
+      @close="showTaskIconPicker = false"
+    />
+
+    <!-- Icon Picker for Reward -->
+    <IconPicker
+      :visible="showRewardIconPicker"
+      v-model="rewardForm.icon"
+      @close="showRewardIconPicker = false"
+    />
   </view>
 </template>
 
@@ -205,6 +235,8 @@ import {
   deleteReward,
 } from "../../utils/storage";
 import { logout, getUser } from "../../utils/auth";
+import IconPicker from "../../components/icon-picker/index.vue";
+import { DEFAULT_TASK_ICON, DEFAULT_REWARD_ICON } from "../../utils/icons";
 import type { Task, Reward } from "../../utils/types";
 import type { AuthUser } from "../../utils/auth";
 
@@ -212,6 +244,8 @@ const tasks = ref<Task[]>([]);
 const rewards = ref<Reward[]>([]);
 const showAddTask = ref(false);
 const showAddReward = ref(false);
+const showTaskIconPicker = ref(false);
+const showRewardIconPicker = ref(false);
 const editingTask = ref<Task | null>(null);
 const editingReward = ref<Reward | null>(null);
 const currentUser = ref<AuthUser | null>(null);
@@ -219,7 +253,7 @@ const currentUser = ref<AuthUser | null>(null);
 const weekDayNames = ["日", "一", "二", "三", "四", "五", "六"];
 
 const taskForm = reactive({
-  icon: "⭐",
+  icon: DEFAULT_TASK_ICON,
   name: "",
   points: 10,
   repeat: "daily" as "daily" | "weekly" | "once",
@@ -227,7 +261,7 @@ const taskForm = reactive({
 });
 
 const rewardForm = reactive({
-  icon: "🎁",
+  icon: DEFAULT_REWARD_ICON,
   name: "",
   points: 50,
 });
@@ -275,7 +309,7 @@ function editTask(task: Task) {
 function closeTaskModal() {
   showAddTask.value = false;
   editingTask.value = null;
-  taskForm.icon = "⭐";
+  taskForm.icon = DEFAULT_TASK_ICON;
   taskForm.name = "";
   taskForm.points = 10;
   taskForm.repeat = "daily";
@@ -340,7 +374,7 @@ function editReward(reward: Reward) {
 function closeRewardModal() {
   showAddReward.value = false;
   editingReward.value = null;
-  rewardForm.icon = "🎁";
+  rewardForm.icon = DEFAULT_REWARD_ICON;
   rewardForm.name = "";
   rewardForm.points = 50;
 }
@@ -675,5 +709,30 @@ onShow(() => loadData());
   font-size: 28rpx;
   font-weight: 500;
   margin-top: 16rpx;
+}
+
+.icon-select-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  min-height: 80rpx;
+  box-sizing: border-box;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.icon-select-preview {
+  font-size: 48rpx;
+}
+
+.icon-select-arrow {
+  font-size: 36rpx;
+  color: #ccc;
+  font-weight: 300;
 }
 </style>
