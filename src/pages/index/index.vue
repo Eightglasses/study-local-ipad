@@ -32,6 +32,38 @@
       还没有任务，去设置页添加吧！
     </view>
 
+    <!-- Deduct Points Section -->
+    <view class="deduct-section">
+      <view class="deduct-header" @tap="showDeduct = !showDeduct">
+        <text class="deduct-title">⚠️ 扣分</text>
+        <text class="deduct-toggle">{{ showDeduct ? '收起' : '展开' }}</text>
+      </view>
+      <view v-if="showDeduct" class="deduct-body">
+        <text class="deduct-hint">表现不好时快速扣分：</text>
+        <view class="deduct-grid">
+          <view
+            v-for="item in quickDeductReasons"
+            :key="item.label"
+            class="deduct-chip"
+            @tap="handleDeduct(item.points, item.label)"
+          >
+            <text class="deduct-chip-icon">{{ item.icon }}</text>
+            <text class="deduct-chip-label">{{ item.label }}</text>
+            <text class="deduct-chip-points">-{{ item.points }}</text>
+          </view>
+        </view>
+        <view class="deduct-custom">
+          <input
+            class="deduct-input"
+            v-model="customDeductPoints"
+            type="number"
+            placeholder="自定义扣分分值"
+          />
+          <view class="deduct-custom-btn" @tap="handleDeduct(customDeductPoints, '表现扣分')">扣分</view>
+        </view>
+      </view>
+    </view>
+
     <!-- Pending Tasks -->
     <view
       v-for="task in pendingTasks"
@@ -89,6 +121,7 @@ import {
   checkIn,
   getTotalPoints,
 } from "../../utils/storage";
+import { deductPoints } from "../../utils/api";
 import type { Task } from "../../utils/types";
 
 const totalPoints = ref(0);
@@ -98,6 +131,17 @@ const showAnimation = ref(false);
 const animatedPoints = ref(0);
 const uploadingTaskId = ref<string | null>(null);
 const allTasks = ref<Task[]>([]);
+const showDeduct = ref(false);
+const customDeductPoints = ref(0);
+
+const quickDeductReasons = [
+  { icon: "😤", label: "发脾气", points: 5 },
+  { icon: "📱", label: "玩手机", points: 10 },
+  { icon: "😴", label: "赖床", points: 3 },
+  { icon: "🗣️", label: "顶嘴", points: 5 },
+  { icon: "📺", label: "偷看电视", points: 8 },
+  { icon: "🍬", label: "偷吃零食", points: 3 },
+];
 
 const allActiveTasks = computed(() =>
   allTasks.value.filter((t: Task) => t.active),
@@ -194,6 +238,29 @@ async function doCheckIn(task: Task) {
       showAnimation.value = false;
     }, 1500);
   }
+}
+
+async function handleDeduct(points: number, reason: string) {
+  if (!points || points <= 0) {
+    uni.showToast({ title: "请输入有效的扣分分值", icon: "none" });
+    return;
+  }
+
+  uni.showModal({
+    title: "确认扣分",
+    content: `确定要扣除 ${points} 分吗？（${reason}）`,
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await deductPoints(points, reason);
+          uni.showToast({ title: `已扣除 ${points} 分`, icon: "success" });
+          loadData();
+        } catch {
+          // error already shown
+        }
+      }
+    },
+  });
 }
 
 async function loadData() {
@@ -349,6 +416,109 @@ onShow(() => {
   color: #999;
   padding: 80rpx 0;
   font-size: 28rpx;
+}
+
+.deduct-section {
+  background: #fff;
+  border-radius: 20rpx;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+}
+
+.deduct-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx;
+  background: #fff5f5;
+}
+
+.deduct-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #f44336;
+}
+
+.deduct-toggle {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.deduct-body {
+  padding: 24rpx;
+}
+
+.deduct-hint {
+  font-size: 24rpx;
+  color: #999;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.deduct-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 20rpx;
+}
+
+.deduct-chip {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 14rpx 20rpx;
+  background: #fff5f5;
+  border: 2rpx solid #ffcdd2;
+  border-radius: 28rpx;
+  font-size: 26rpx;
+
+  &:active {
+    opacity: 0.8;
+    transform: scale(0.96);
+  }
+}
+
+.deduct-chip-icon {
+  font-size: 28rpx;
+}
+
+.deduct-chip-label {
+  color: #666;
+}
+
+.deduct-chip-points {
+  color: #f44336;
+  font-weight: 600;
+}
+
+.deduct-custom {
+  display: flex;
+  gap: 12rpx;
+  align-items: center;
+}
+
+.deduct-input {
+  flex: 1;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 16rpx;
+  padding: 16rpx 20rpx;
+  font-size: 26rpx;
+  min-height: 72rpx;
+  box-sizing: border-box;
+}
+
+.deduct-custom-btn {
+  padding: 16rpx 32rpx;
+  background: #f44336;
+  color: #fff;
+  border-radius: 16rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  white-space: nowrap;
+
+  &:active {
+    opacity: 0.8;
+  }
 }
 
 .animation-overlay {

@@ -104,15 +104,19 @@ export function fetchAllCheckIns(): Promise<CheckIn[]> {
 }
 
 export function createCheckIn(taskId: string): Promise<CheckIn> {
-    return request({ url: '/checkins', method: 'POST', data: { taskId } })
+    const info = uni.getSystemInfoSync()
+    const device = `${info.brand || ''} ${info.model || ''} (${info.platform || ''})`.trim()
+    return request({ url: '/checkins', method: 'POST', data: { taskId, device } })
 }
 
 export function createCheckInWithImage(taskId: string, filePath: string): Promise<CheckIn> {
+    const info = uni.getSystemInfoSync()
+    const device = `${info.brand || ''} ${info.model || ''} (${info.platform || ''})`.trim()
     return uploadFile({
         url: '/checkins',
         filePath,
         name: 'image',
-        formData: { taskId },
+        formData: { taskId, device },
     })
 }
 
@@ -154,4 +158,10 @@ export function fetchRedeems(): Promise<RedeemRecord[]> {
 
 export function createRedeem(rewardId: string): Promise<RedeemRecord> {
     return request({ url: '/redeem', method: 'POST', data: { rewardId } })
+}
+
+// ===== Deduct Points =====
+
+export function deductPoints(points: number, reason: string): Promise<PointsLog> {
+    return request({ url: '/points/deduct', method: 'POST', data: { points, reason } })
 }

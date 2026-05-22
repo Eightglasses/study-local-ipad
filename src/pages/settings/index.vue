@@ -59,6 +59,8 @@
       </view>
     </view>
 
+    <view class="change-pwd-btn" @tap="showChangePwd = true">修改密码</view>
+
     <view class="logout-btn" @tap="handleLogout">退出登录</view>
 
     <!-- Add Task Modal -->
@@ -218,6 +220,51 @@
       v-model="rewardForm.icon"
       @close="showRewardIconPicker = false"
     />
+
+    <!-- Change Password Modal -->
+    <view v-if="showChangePwd" class="modal-overlay">
+      <view class="modal-content" @tap.stop>
+        <view class="modal-header">
+          <text class="modal-title">修改密码</text>
+          <text class="modal-close" @tap="closePwdModal">✕</text>
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">旧密码</text>
+          <input
+            class="form-input"
+            v-model="pwdForm.oldPassword"
+            password
+            placeholder="请输入旧密码"
+          />
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">新密码</text>
+          <input
+            class="form-input"
+            v-model="pwdForm.newPassword"
+            password
+            placeholder="至少 4 位"
+          />
+        </view>
+
+        <view class="form-group">
+          <text class="form-label">确认新密码</text>
+          <input
+            class="form-input"
+            v-model="pwdForm.confirmPassword"
+            password
+            placeholder="再次输入新密码"
+          />
+        </view>
+
+        <view class="modal-actions">
+          <view class="modal-btn cancel" @tap="closePwdModal">取消</view>
+          <view class="modal-btn confirm" @tap="handleChangePassword">确认修改</view>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -234,7 +281,7 @@ import {
   updateReward,
   deleteReward,
 } from "../../utils/storage";
-import { logout, getUser } from "../../utils/auth";
+import { logout, getUser, changePassword } from "../../utils/auth";
 import IconPicker from "../../components/icon-picker/index.vue";
 import { DEFAULT_TASK_ICON, DEFAULT_REWARD_ICON } from "../../utils/icons";
 import type { Task, Reward } from "../../utils/types";
@@ -249,6 +296,7 @@ const showRewardIconPicker = ref(false);
 const editingTask = ref<Task | null>(null);
 const editingReward = ref<Reward | null>(null);
 const currentUser = ref<AuthUser | null>(null);
+const showChangePwd = ref(false);
 
 const weekDayNames = ["日", "一", "二", "三", "四", "五", "六"];
 
@@ -264,6 +312,12 @@ const rewardForm = reactive({
   icon: DEFAULT_REWARD_ICON,
   name: "",
   points: 50,
+});
+
+const pwdForm = reactive({
+  oldPassword: "",
+  newPassword: "",
+  confirmPassword: "",
 });
 
 function repeatLabel(task: Task): string {
@@ -433,6 +487,44 @@ async function loadData() {
   currentUser.value = getUser();
   tasks.value = await getTasks();
   rewards.value = await getRewards();
+}
+
+function handleChangePassword() {
+  if (!pwdForm.oldPassword) {
+    uni.showToast({ title: "请输入旧密码", icon: "none" });
+    return;
+  }
+  if (!pwdForm.newPassword || pwdForm.newPassword.length < 4) {
+    uni.showToast({ title: "新密码至少 4 位", icon: "none" });
+    return;
+  }
+  if (pwdForm.newPassword !== pwdForm.confirmPassword) {
+    uni.showToast({ title: "两次输入的新密码不一致", icon: "none" });
+    return;
+  }
+
+  uni.showModal({
+    title: "确认修改",
+    content: "确定要修改密码吗？",
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await changePassword(pwdForm.oldPassword, pwdForm.newPassword);
+          uni.showToast({ title: "密码修改成功", icon: "success" });
+          closePwdModal();
+        } catch {
+          // error already shown by changePassword
+        }
+      }
+    },
+  });
+}
+
+function closePwdModal() {
+  showChangePwd.value = false;
+  pwdForm.oldPassword = "";
+  pwdForm.newPassword = "";
+  pwdForm.confirmPassword = "";
 }
 
 function handleLogout() {
@@ -698,6 +790,17 @@ onShow(() => loadData());
     background: #ff6b35;
     color: #fff;
   }
+}
+
+.change-pwd-btn {
+  text-align: center;
+  padding: 24rpx 0;
+  background: #f0f7ff;
+  color: #2196f3;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  margin-bottom: 12rpx;
 }
 
 .logout-btn {

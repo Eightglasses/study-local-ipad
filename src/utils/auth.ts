@@ -65,6 +65,28 @@ export async function register(username: string, password: string): Promise<Auth
     })
 }
 
+/** 修改密码 */
+export async function changePassword(oldPassword: string, newPassword: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        uni.request({
+            url: '/api/auth/password',
+            method: 'PUT',
+            data: { oldPassword, newPassword },
+            header: { Authorization: `Bearer ${getToken()}` },
+            success: (res: any) => {
+                const body = res.data
+                if (body.code === 0) {
+                    resolve()
+                } else {
+                    uni.showToast({ title: body.message || '修改失败', icon: 'none' })
+                    reject(new Error(body.message))
+                }
+            },
+            fail: reject,
+        })
+    })
+}
+
 /** 登录 */
 export async function login(username: string, password: string): Promise<AuthResponse> {
     return new Promise((resolve, reject) => {

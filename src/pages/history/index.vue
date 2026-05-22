@@ -56,7 +56,7 @@
             <view class="record-info">
               <text class="record-name">{{ record.taskName }}</text>
               <text class="record-meta"
-                >{{ record.date }} · +{{ record.points }}分</text
+                >{{ record.date }} · +{{ record.points }}分<text v-if="record.device"> · {{ record.device }}</text></text
               >
             </view>
           </view>
@@ -108,6 +108,10 @@
             <text class="detail-value detail-points"
               >+{{ detailRecord.points }}</text
             >
+          </view>
+          <view v-if="detailRecord.device" class="detail-row">
+            <text class="detail-label">打卡设备</text>
+            <text class="detail-value">{{ detailRecord.device }}</text>
           </view>
         </view>
 
@@ -372,6 +376,9 @@ onShow(() => loadData());
     color: #4caf50;
   }
   &.redeem {
+    color: #f44336;
+  }
+  &.deduct {
     color: #f44336;
   }
 }

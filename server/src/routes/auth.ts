@@ -97,4 +97,36 @@ router.post('/login', (req, res) => {
     }, '登录成功')
 })
 
+// PUT /api/auth/password
+router.put('/password', (req, res) => {
+    const db = getDb()
+    const { oldPassword, newPassword } = req.body
+
+    if (!oldPassword || !newPassword) {
+        fail(res, '请输入旧密码和新密码', 400)
+        return
+    }
+
+    if (newPassword.length < 4) {
+        fail(res, '新密码至少 4 位', 400)
+        return
+    }
+
+    const user: any = db.prepare('SELECT * FROM users WHERE id = ?').get(req.userId)
+    if (!user) {
+        fail(res, '用户不存在', 404)
+        return
+    }
+
+    if (!verifyPassword(oldPassword, user.password_hash)) {
+        fail(res, '旧密码错误', 401)
+        return
+    }
+
+    const newHash = hashPassword(newPassword)
+    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(newHash, req.userId)
+
+    success(res, null, '密码修改成功')
+})
+
 export default router

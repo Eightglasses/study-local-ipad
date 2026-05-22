@@ -59,6 +59,7 @@ router.post('/', (req, res) => {
 
     const id = genId()
     const createdAt = Date.now()
+    const device = req.body.device || ''
 
     let imagePath: string | null = null
     if (file) {
@@ -70,9 +71,9 @@ router.post('/', (req, res) => {
     }
 
     db.prepare(`
-    INSERT INTO checkins (id, user_id, task_id, task_name, task_icon, date, points, image_path, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(id, req.userId, taskId, task.name, task.icon, dateStr, task.points, imagePath, createdAt)
+    INSERT INTO checkins (id, user_id, task_id, task_name, task_icon, date, points, image_path, device, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(id, req.userId, taskId, task.name, task.icon, dateStr, task.points, imagePath, device, createdAt)
 
     addPointsLog(db, req.userId!, task.points, `${task.icon} ${task.name}`)
 
@@ -120,6 +121,7 @@ function mapCheckIn(row: any) {
         date: row.date,
         points: row.points,
         imageUrl: row.image_path ? `/api/images/${row.image_path}` : undefined,
+        device: row.device || '',
         createdAt: row.created_at,
     }
 }

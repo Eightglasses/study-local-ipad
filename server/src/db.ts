@@ -158,6 +158,13 @@ function migrate() {
             db.run(`ALTER TABLE ${table} ADD COLUMN user_id TEXT`)
         }
     }
+
+    // 为 checkins 表添加 device 列
+    const checkinCols = db.exec('PRAGMA table_info(checkins)')
+    const checkinColNames = checkinCols.length > 0 ? checkinCols[0].values.map((r: any) => r[1]) : []
+    if (!checkinColNames.includes('device')) {
+        db.run('ALTER TABLE checkins ADD COLUMN device TEXT DEFAULT \'\'')
+    }
 }
 
 export function getDb() {

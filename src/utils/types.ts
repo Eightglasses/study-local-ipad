@@ -17,6 +17,7 @@ export interface CheckIn {
   date: string
   points: number
   imageUrl?: string
+  device?: string
   createdAt: number
 }
 
@@ -40,7 +41,7 @@ export interface RedeemRecord {
 
 export interface PointsLog {
   id: string
-  type: 'earn' | 'redeem'
+  type: 'earn' | 'redeem' | 'deduct'
   points: number
   description: string
   createdAt: number

@@ -13,10 +13,10 @@ function genId(): string {
 router.get('/', (req, res) => {
   const db = getDb()
   const result: any = db
-    .prepare("SELECT COALESCE(SUM(CASE WHEN type='earn' THEN points ELSE 0 END), 0) as earned, COALESCE(SUM(CASE WHEN type='redeem' THEN points ELSE 0 END), 0) as redeemed FROM points_log WHERE user_id = ?")
+    .prepare("SELECT COALESCE(SUM(CASE WHEN type='earn' THEN points ELSE 0 END), 0) as earned, COALESCE(SUM(CASE WHEN type='redeem' THEN points ELSE 0 END), 0) as redeemed, COALESCE(SUM(CASE WHEN type='deduct' THEN points ELSE 0 END), 0) as deducted FROM points_log WHERE user_id = ?")
     .get(req.userId)
   success(res, {
-    total: result.earned - result.redeemed,
+    total: result.earned - result.redeemed - result.deducted,
     earned: result.earned,
     redeemed: result.redeemed,
   })
@@ -57,7 +57,7 @@ router.post('/redeem', (req, res) => {
   }
 
   const points: any = db
-    .prepare("SELECT COALESCE(SUM(CASE WHEN type='earn' THEN points WHEN type='redeem' THEN -points ELSE 0 END), 0) as total FROM points_log WHERE user_id = ?")
+    .prepare("SELECT COALESCE(SUM(CASE WHEN type='earn' THEN points WHEN type='redeem' OR type='deduct' THEN -points ELSE 0 END), 0) as total FROM points_log WHERE user_id = ?")
     .get(req.userId)
 
   if (points.total < reward.points) {
@@ -80,6 +80,29 @@ router.post('/redeem', (req, res) => {
 
   const row = db.prepare('SELECT * FROM redeems WHERE id = ? AND user_id = ?').get(id, req.userId)
   success(res, mapRedeem(row), '兑换成功')
+})
+
+// POST /api/points/deduct
+router.post('/deduct', (req, res) => {
+  const db = getDb()
+  const { points, reason } = req.body
+
+  if (!points || points <= 0) {
+    fail(res, '扣分分值必须大于0', 400)
+    return
+  }
+
+  const id = genId()
+  const createdAt = Date.now()
+  const description = reason || '表现扣分'
+
+  db.prepare(`
+    INSERT INTO points_log (id, user_id, type, points, description, created_at)
+    VALUES (?, ?, 'deduct', ?, ?, ?)
+  `).run(id, req.userId, points, description, createdAt)
+
+  const row = db.prepare('SELECT * FROM points_log WHERE id = ? AND user_id = ?').get(id, req.userId)
+  success(res, mapPointsLog(row), '扣分成功')
 })
 
 function mapPointsLog(row: any) {
