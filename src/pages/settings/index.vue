@@ -261,7 +261,9 @@
 
         <view class="modal-actions">
           <view class="modal-btn cancel" @tap="closePwdModal">取消</view>
-          <view class="modal-btn confirm" @tap="handleChangePassword">确认修改</view>
+          <view class="modal-btn confirm" @tap="handleChangePassword"
+            >确认修改</view
+          >
         </view>
       </view>
     </view>

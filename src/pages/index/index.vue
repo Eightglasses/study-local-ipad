@@ -36,7 +36,7 @@
     <view class="deduct-section">
       <view class="deduct-header" @tap="showDeduct = !showDeduct">
         <text class="deduct-title">⚠️ 扣分</text>
-        <text class="deduct-toggle">{{ showDeduct ? '收起' : '展开' }}</text>
+        <text class="deduct-toggle">{{ showDeduct ? "收起" : "展开" }}</text>
       </view>
       <view v-if="showDeduct" class="deduct-body">
         <text class="deduct-hint">表现不好时快速扣分：</text>
@@ -59,7 +59,11 @@
             type="number"
             placeholder="自定义扣分分值"
           />
-          <view class="deduct-custom-btn" @tap="handleDeduct(customDeductPoints, '表现扣分')">扣分</view>
+          <view
+            class="deduct-custom-btn"
+            @tap="handleDeduct(customDeductPoints, '表现扣分')"
+            >扣分</view
+          >
         </view>
       </view>
     </view>

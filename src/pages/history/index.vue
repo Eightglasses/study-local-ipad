@@ -56,7 +56,11 @@
             <view class="record-info">
               <text class="record-name">{{ record.taskName }}</text>
               <text class="record-meta"
-                >{{ record.date }} · +{{ record.points }}分<text v-if="record.device"> · {{ record.device }}</text></text
+                >{{ record.date }} · +{{ record.points }}分<text
+                  v-if="record.device"
+                >
+                  · {{ record.device }}</text
+                ></text
               >
             </view>
           </view>

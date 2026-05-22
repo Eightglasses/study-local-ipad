@@ -10,66 +10,66 @@ let db: SqlJsDb
 
 // Wrapper to make sql.js work like better-sqlite3
 class StatementWrapper {
-    private stmt: any
-    constructor(stmt: any) {
-        this.stmt = stmt
+  private stmt: any
+  constructor(stmt: any) {
+    this.stmt = stmt
+  }
+  get(...params: any[]) {
+    if (params.length > 0) this.stmt.bind(params)
+    if (this.stmt.step()) {
+      const row = this.stmt.getAsObject()
+      this.stmt.reset()
+      return row
     }
-    get(...params: any[]) {
-        if (params.length > 0) this.stmt.bind(params)
-        if (this.stmt.step()) {
-            const row = this.stmt.getAsObject()
-            this.stmt.reset()
-            return row
-        }
-        this.stmt.reset()
-        return undefined
+    this.stmt.reset()
+    return undefined
+  }
+  all(...params: any[]) {
+    if (params.length > 0) this.stmt.bind(params)
+    const rows: any[] = []
+    while (this.stmt.step()) {
+      rows.push(this.stmt.getAsObject())
     }
-    all(...params: any[]) {
-        if (params.length > 0) this.stmt.bind(params)
-        const rows: any[] = []
-        while (this.stmt.step()) {
-            rows.push(this.stmt.getAsObject())
-        }
-        this.stmt.reset()
-        return rows
-    }
-    run(...params: any[]) {
-        if (params.length > 0) this.stmt.bind(params)
-        this.stmt.step()
-        this.stmt.reset()
-    }
+    this.stmt.reset()
+    return rows
+  }
+  run(...params: any[]) {
+    if (params.length > 0) this.stmt.bind(params)
+    this.stmt.step()
+    this.stmt.reset()
+  }
 }
 
 export async function initDb(): Promise<void> {
-    const dir = path.dirname(DB_PATH)
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true })
-    }
+  const dir = path.dirname(DB_PATH)
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
+  }
 
-    const SQL = await initSqlJs()
+  const SQL = await initSqlJs()
 
-    if (fs.existsSync(DB_PATH)) {
-        const buffer = fs.readFileSync(DB_PATH)
-        db = new SQL.Database(buffer)
-    } else {
-        db = new SQL.Database()
-    }
+  if (fs.existsSync(DB_PATH)) {
+    const buffer = fs.readFileSync(DB_PATH)
+    db = new SQL.Database(buffer)
+  } else {
+    db = new SQL.Database()
+  }
 
-    db.run('PRAGMA journal_mode=WAL')
-    initSchema()
-    migrate()
-    saveDb()
+  db.run('PRAGMA journal_mode=WAL')
+  initSchema()
+  migrate()
+  saveDb()
 }
 
 function saveDb() {
-    const data = db.export()
-    const buffer = Buffer.from(data)
-    fs.writeFileSync(DB_PATH, buffer)
+  const data = db.export()
+  const buffer = Buffer.from(data)
+  fs.writeFileSync(DB_PATH, buffer)
 }
 
 function initSchema() {
-    // 用户表
-    db.run(`
+  // 用户表
+  db.run(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       username TEXT NOT NULL UNIQUE,
@@ -78,8 +78,8 @@ function initSchema() {
     )
   `)
 
-    // 任务表
-    db.run(`
+  // 任务表
+  db.run(`
     CREATE TABLE IF NOT EXISTS tasks (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
@@ -93,8 +93,8 @@ function initSchema() {
     )
   `)
 
-    // 打卡记录表
-    db.run(`
+  // 打卡记录表
+  db.run(`
     CREATE TABLE IF NOT EXISTS checkins (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
@@ -108,8 +108,8 @@ function initSchema() {
     )
   `)
 
-    // 奖励表
-    db.run(`
+  // 奖励表
+  db.run(`
     CREATE TABLE IF NOT EXISTS rewards (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
@@ -121,8 +121,8 @@ function initSchema() {
     )
   `)
 
-    // 兑换记录表
-    db.run(`
+  // 兑换记录表
+  db.run(`
     CREATE TABLE IF NOT EXISTS redeems (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
@@ -134,8 +134,8 @@ function initSchema() {
     )
   `)
 
-    // 积分日志表
-    db.run(`
+  // 积分日志表
+  db.run(`
     CREATE TABLE IF NOT EXISTS points_log (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
@@ -149,39 +149,39 @@ function initSchema() {
 
 /** 数据库迁移：为旧表添加 user_id 列 */
 function migrate() {
-    const tables = ['tasks', 'checkins', 'rewards', 'redeems', 'points_log']
+  const tables = ['tasks', 'checkins', 'rewards', 'redeems', 'points_log']
 
-    for (const table of tables) {
-        const rows = db.exec(`PRAGMA table_info(${table})`)
-        const cols = rows.length > 0 ? rows[0].values.map((r: any) => r[1]) : []
-        if (!cols.includes('user_id')) {
-            db.run(`ALTER TABLE ${table} ADD COLUMN user_id TEXT`)
-        }
+  for (const table of tables) {
+    const rows = db.exec(`PRAGMA table_info(${table})`)
+    const cols = rows.length > 0 ? rows[0].values.map((r: any) => r[1]) : []
+    if (!cols.includes('user_id')) {
+      db.run(`ALTER TABLE ${table} ADD COLUMN user_id TEXT`)
     }
+  }
 
-    // 为 checkins 表添加 device 列
-    const checkinCols = db.exec('PRAGMA table_info(checkins)')
-    const checkinColNames = checkinCols.length > 0 ? checkinCols[0].values.map((r: any) => r[1]) : []
-    if (!checkinColNames.includes('device')) {
-        db.run('ALTER TABLE checkins ADD COLUMN device TEXT DEFAULT \'\'')
-    }
+  // 为 checkins 表添加 device 列
+  const checkinCols = db.exec('PRAGMA table_info(checkins)')
+  const checkinColNames = checkinCols.length > 0 ? checkinCols[0].values.map((r: any) => r[1]) : []
+  if (!checkinColNames.includes('device')) {
+    db.run('ALTER TABLE checkins ADD COLUMN device TEXT DEFAULT \'\'')
+  }
 }
 
 export function getDb() {
-    if (!db) throw new Error('Database not initialized. Call initDb() first.')
-    return {
-        prepare: (sql: string) => {
-            const stmt = db.prepare(sql)
-            return new StatementWrapper(stmt)
-        },
-        exec: (sql: string) => db.exec(sql),
-        run: (sql: string, params?: any[]) => {
-            db.run(sql, params)
-            saveDb()
-            return { changes: db.getRowsModified() }
-        },
-        save: () => saveDb(),
-    }
+  if (!db) throw new Error('Database not initialized. Call initDb() first.')
+  return {
+    prepare: (sql: string) => {
+      const stmt = db.prepare(sql)
+      return new StatementWrapper(stmt)
+    },
+    exec: (sql: string) => db.exec(sql),
+    run: (sql: string, params?: any[]) => {
+      db.run(sql, params)
+      saveDb()
+      return { changes: db.getRowsModified() }
+    },
+    save: () => saveDb(),
+  }
 }
 
 export default getDb
